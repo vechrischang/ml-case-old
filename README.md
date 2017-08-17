@@ -10,3 +10,6 @@
 ## case_car
 ### apply Random Forests to predict the driver completed rate.
 #### Summary
+- provide some weekend bonus to motivate the drivers to sign up.
+- narrow the vehicle year gap, select the newer vehicle of the drivers would intcrease the completed rete.
+- Based on the results from the prediction radnom forests, improve the backgound check time would increase the completed time, boosting the percentage of trip completed.
