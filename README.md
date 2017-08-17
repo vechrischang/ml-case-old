@@ -1,6 +1,6 @@
 # test for machine_learning
 ## case_appreal
-###apply Knn and Random Forests to predict the stock decrease on online shop
+### apply Knn and Random Forests to predict the stock decrease on online shop
 #### Summary
 - ML-KNN, the results give a proper accurate rate. However, the decision boundary is not clear so change the dimensions or test other models will be better.
 - ML-RT, we can apply more dimensions to get more competed predictive and complicated results.
