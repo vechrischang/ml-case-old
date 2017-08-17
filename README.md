@@ -8,5 +8,5 @@
 - if inlcudes user session, demographic and transaction data, we can calssify user attributions by different feaatures, linking to the product ategories. 
 
 ## case_car
-apply Random Forests to predict the driver completed rate.
-
+### apply Random Forests to predict the driver completed rate.
+#### Summary
