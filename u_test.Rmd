@@ -1,0 +1,199 @@
+---
+title: "u_test"
+author: "Chris"
+date: "June 26, 2017"
+output: html_document
+---
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(readr)
+library(dplyr)
+library(reshape2)
+library(qdapRegex)
+library(ggplot2)
+library(ggthemes)
+library(ggalt)
+library(scales)
+library(lubridate)
+library(reshape2)
+library(lubridate)
+library(class)
+library(cowplot)
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# load data
+u_raw <- read_csv("C:/Users/User/Pictures/R_2017/Uber/Uber_data.csv")
+# tidy and clean
+u_raw_tidy <- u_raw %>%
+  arrange(signup_date)
+u_raw_tidy$signup_date <- mdy(u_raw_tidy$signup_date)
+u_raw_tidy$bgc_date <- mdy(u_raw_tidy$bgc_date)
+u_raw_tidy$vehicle_added_date <- mdy(u_raw_tidy$vehicle_added_date)
+u_raw_tidy$first_completed_date <- mdy(u_raw_tidy$first_completed_date)
+  # duration
+u_raw_tidy$sig_com <- u_raw_tidy$first_completed_date - u_raw_tidy$signup_date
+u_raw_tidy$bcg_com <- u_raw_tidy$first_completed_date - u_raw_tidy$bgc_date
+u_raw_tidy$veh_com <- u_raw_tidy$first_completed_date - u_raw_tidy$vehicle_added_date
+  # apply mutple columns on data type
+u_raw_tidy[, c(12:14)] <- sapply(u_raw_tidy[, c(12:14)], as.numeric)
+u_raw_tidy$completed <- ifelse(u_raw_tidy$sig_com >= 1, "TRUE", "FALSE")
+u_raw_tidy$completed[is.na(u_raw_tidy$completed)] <- "FALSE"
+
+u_raw_tidy$sig_com[is.na(u_raw_tidy$sig_com)] <- 0
+u_raw_tidy$bcg_com[is.na(u_raw_tidy$bcg_com)] <- 0
+u_raw_tidy$veh_com[is.na(u_raw_tidy$veh_com)] <- 0
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# explore timestamp
+u_date <- u_raw_tidy %>%
+  group_by(signup_date) %>%
+  summarise(total_completed = length(sig_com[sig_com > 0]),
+            total_incompleted = length(sig_com[sig_com == 0]),
+            average_sin_to_com_day = mean(sig_com[sig_com > 0]))
+u_date$completed_rate = percent(
+  u_date$total_completed /(u_date$total_completed + u_date$total_incompleted)
+  )
+  # ompleted rate
+ggplot(u_date) +
+  geom_line(aes(x = signup_date, y = completed_rate), group = 1, color = "#1abc9c", size = 1) +
+  theme(legend.position="top", legend.title=element_blank(),
+        legend.text = element_text(colour= "black", size= 8, face= "bold")) +
+  theme(axis.text.x= element_text(face= "bold", size= 10, color = "#666666"),
+        axis.text.y= element_text(face= "bold", size= 10, color = "#666666")) +
+  theme(axis.line=element_blank(), axis.ticks.y=element_blank(), axis.title=element_blank()) +
+  theme(plot.title = element_text(hjust = 0)) +  
+  labs(x= "", y= "", title= "Daily Completed Rate from Signup to completed") +
+  scale_y_continuous(labels= scales::comma, position = "right") +
+  theme(panel.background = element_rect(fill = "grey96"),
+        plot.background = element_rect(fill = "grey96"),        
+        panel.grid.major = element_line(colour = "gray65"),
+        panel.grid.major.x = element_blank())
+  # average_sin_to_com_day
+ggplot(u_date) +  
+  geom_bar(aes(x = signup_date, y = average_sin_to_com_day, fill = average_sin_to_com_day),
+           position="dodge", stat= "identity") +
+  theme(legend.position="top", legend.title=element_blank(),
+        legend.text = element_text(colour= "black", size= 8, face= "bold")) +
+  theme(axis.text.x= element_text(face= "bold", size= 10, color = "#666666"),
+        axis.text.y= element_text(face= "bold", size= 10, color = "#666666")) +
+  theme(axis.line=element_blank(), axis.ticks.y=element_blank(), axis.title=element_blank()) +
+  theme(plot.title = element_text(hjust = 0)) +  
+  labs(x= "", y= "", title= "Average Days From Sign Up to Complete") +
+  scale_y_continuous(labels= scales::comma, position = "right") +
+  theme(panel.background = element_rect(fill = "grey96"),
+        plot.background = element_rect(fill = "grey96"),        
+        panel.grid.major = element_line(colour = "gray65"),
+        panel.grid.major.x = element_blank())
+
+# the plot indicates daily completed rate 
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# explore vehicle year
+u_veh_year <- u_raw_tidy %>%
+  group_by(vehicle_year) %>%
+  summarise(total_completed = length(sig_com[sig_com > 0]),
+            total_incompleted = length(sig_com[sig_com == 0]),
+            average_sin_to_com_day = mean(sig_com[sig_com > 0]))
+u_veh_year$completed_rate = percent(u_veh_year$total_completed/(u_veh_year$total_completed + u_veh_year$total_incompleted))
+  # 
+ggplot(filter(u_veh_year, completed_rate != 0)) +
+  geom_line(aes(x = vehicle_year, y = completed_rate), group = 1, color = "#6e8196", size = 1) +
+  geom_smooth(aes(x = vehicle_year, y = completed_rate)) +
+  theme(legend.position="none", legend.title=element_blank(),
+        legend.text = element_text(colour= "black", size= 8, face= "bold")) +
+  theme(axis.text.x= element_text(face= "bold", size= 10, color = "#666666"),
+        axis.text.y= element_text(face= "bold", size= 7, color = "#666666")) +
+  theme(axis.line=element_blank(), axis.ticks.y=element_blank(), axis.title=element_blank()) +
+  theme(plot.title = element_text(hjust = 0)) +  
+  labs(x= "", y= "", title= "Completed Rate from Signup to Completed by Vehicle Year") +
+  xlim(2000, 2016) +
+  scale_y_continuous(labels= scales::comma, position = "right") +
+  theme(panel.background = element_rect(fill = "grey96"),
+        plot.background = element_rect(fill = "grey96"),        
+        panel.grid.major = element_line(colour = "gray65"),
+        panel.grid.major.x = element_blank())
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# explore vehicle brand type
+u_veh <- u_raw_tidy %>%
+  group_by(vehicle_make) %>%
+  summarise(total_completed = length(sig_com[sig_com > 0]),
+            total_incompleted = length(sig_com[sig_com == 0]),
+            average_sin_to_com_day = mean(sig_com[sig_com > 0]))
+u_veh$completed_rate = percent(u_veh$total_completed/(u_veh$total_completed + u_veh$total_incompleted))
+u_veh <- u_veh %>%
+  arrange(desc(completed_rate))
+
+ggplot(filter(u_veh, vehicle_make != "NA" & average_sin_to_com_day != 0)) +
+  geom_bar(aes(x = vehicle_make, y = average_sin_to_com_day, fill = average_sin_to_com_day),
+           position="dodge", stat= "identity") +
+  geom_line(aes(x = vehicle_make, y = completed_rate), group = 1, color = "#1abc9c", size = 1) +
+  coord_flip() +
+  theme(legend.position="right", legend.title=element_blank(),
+        legend.text = element_text(colour= "black", size= 8, face= "bold")) +
+  theme(axis.text.x= element_text(face= "bold", size= 10, color = "#666666"),
+        axis.text.y= element_text(face= "bold", size= 7, color = "#666666")) +
+  theme(axis.line=element_blank(), axis.ticks.y=element_blank(), axis.title=element_blank()) +
+  theme(plot.title = element_text(hjust = 0)) +  
+  labs(x= "", y= "", title= "Car Brand - Average Days Sign up to Complete / Completed Rate") +
+  scale_y_continuous(labels= scales::comma, position = "right") +
+  theme(panel.background = element_rect(fill = "grey96"),
+        plot.background = element_rect(fill = "grey96"),        
+        panel.grid.major = element_line(colour = "gray65"),
+        panel.grid.major.x = element_blank())
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# apply Random Forests
+# only select the metrics for the model need
+u_rf <- u_raw_tidy %>%
+  select(signup_channel, signup_date, sig_com, bcg_com, veh_com, completed)
+
+# split up training set and testing set
+# train / test set account for 70%/30%
+u_rf.train <- sample(1:nrow(u_rf), 39277)
+u_rf.test <- setdiff(rownames(u_rf), u_rf.train)
+u_rf_training <- u_rf[u_rf.train,] 
+u_rf_testing <- u_rf[-u_rf.train,]
+
+# run the model
+u_rf_tree <- rpart(sig_com ~ ., x = TRUE, data = u_rf_training)
+
+# evaluation for the models
+caculate_rms_error <- function(mdl, train, test, yval) {
+  train.yhat <- predict(object = mdl, newdata = train)
+  test.yhat <- predict(object = mdl, newdata = test)
+  train.y <- with(train, get(yval))
+  test.y <- with(test, get(yval))
+  train.err <- sqrt(mean((train.yhat - train.y)^2)) # RMSE
+  test.err <- sqrt(mean((test.yhat - test.y)^2)) # RMSE
+  c(train.err = train.err, test.err = test.err)
+}
+
+# error comparsion for train/test set
+caculate_rms_error(u_rf_tree, u_rf_training, u_rf_testing, "sig_com")
+rsq.rpart(u_rf_tree)
+
+# plot tree
+u_rf_tree_plot <- train(completed ~ ., method = "rpart", data = u_rf_training)
+fancyRpartPlot(u_rf_tree_plot$finalModel)
+```
+
+```{r}
+# Suggestions
+
+
+```
+
+
+
+
+
+
+
+
+
