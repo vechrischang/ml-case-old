@@ -2,7 +2,7 @@
 
 ## prcie change prediction in apparels
 
-**apply Knn and Random Forests to predict the stock decrease on online shop**
+***apply Knn and Random Forests to predict the stock decrease on online shop***
 
 #### Summary
 
@@ -13,7 +13,7 @@
 
 ## driver will churn or not
 
-**apply Random Forests to predict the driver completed rate.**
+***apply Random Forests to predict the driver completed rate.***
 
 #### Summary
 
