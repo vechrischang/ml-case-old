@@ -1,7 +1,7 @@
 # case for machine_learning
 
 ## prcie change prediction in apparels
-### apply Knn and Random Forests to predict the stock decrease on online shop
+**apply Knn and Random Forests to predict the stock decrease on online shop**
 #### Summary
 - ML-KNN, the results give a proper accurate rate. However, the decision boundary is not clear so change the dimensions or test other models will be better.
 - ML-RT, we can apply more dimensions to get more competed predictive and complicated results.
@@ -9,7 +9,7 @@
 - if inlcudes user session, demographic and transaction data, we can calssify user attributions by different feaatures, linking to the product ategories. 
 
 ## driver will churn or not
-### apply Random Forests to predict the driver completed rate.
+**apply Random Forests to predict the driver completed rate.**
 #### Summary
 - provide some weekend bonus to motivate the drivers to sign up.
 - narrow the vehicle year gap, select the newer vehicle of the drivers would intcrease the completed rete.
